@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: NettOp
+Plugin Name: NettOp-plugin
 Plugin URI: http://www.uis.no
 Description: NettOp demo plugin 
 */
