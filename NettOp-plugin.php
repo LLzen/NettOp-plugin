@@ -2,7 +2,7 @@
 /*
 Plugin Name: NettOp-plugin
 Plugin URI: http://www.uis.no
-Description: NettOp demo plugin 
+Description: NettOp demo plugin
 */
 
 require( dirname( __FILE__ ) . '/settings.php' ); //include the settings menu option
@@ -21,7 +21,7 @@ define('NETTOP_PLUGIN_PATH', NETTOP_PATH . '/plugin');
 
 define('NETTOP_SHORTCODE', 'NETTOP_'); //define the shortcode prefix
 
-
+define('NETTOP_DATA_googleFont', 'googleFont');
 
 
 class nettop {
@@ -43,11 +43,15 @@ class nettop {
 
         self::$my_settings_page = new MySettingsPage();
 
-        add_shortcode(NETTOP_SHORTCODE . "getParentLink", array( $this, 'getParentLink'));
+        add_shortcode(NETTOP_SHORTCODE . "getPreviousLink", array( $this, 'getPreviousLink'));
         add_shortcode(NETTOP_SHORTCODE . "getNextLink", array( $this, 'getNextLink'));
         add_shortcode(NETTOP_SHORTCODE . "getConfigValue", array( $this, 'getConfigValue'));
-        add_action('wp_enqueue_scripts', array( $this, 'addGoogleFonts_loader'));
-        add_action('wp_head', array( $this, 'addGoogleFonts_css'));
+
+        
+        if (is_null(self::getConfig(NETTOP_DATA_googleFont))==false) {
+            add_action('wp_enqueue_scripts', array( $this, 'addGoogleFonts_loader'));
+            add_action('wp_head', array( $this, 'addGoogleFonts_css'));
+        }
 
         //create a simple list of all pages - in the menu sequence
         $args = array(
@@ -74,36 +78,55 @@ class nettop {
         }
     }
 
-    //called from a shortcode
-    function getConfigValue($id) {
+    //shortcode
+    function getConfigValue($attsIn = [], $content = null, $tag) {
         //var_dump(self::$my_settings_page); //use to view the lot
-        if ($id=="") {$id="font_string";}
-        $ret=self::$my_settings_page->getOption($id);
-        if ($ret==null) {
-            $ret="NettOp plugin error: config value '" . $id . "' requested - but nothing by that name exists.";
+
+        // normalize attribute keys, lowercase
+        $attsIn = array_change_key_case((array)$attsIn, CASE_LOWER);
+    
+       // override default attributes with user attributes
+        $atts = shortcode_atts([
+                'id' => '',
+            ], $attsIn, $tag);
+        
+        //var_dump($atts);
+        
+        //if ($atts["id"]=="") {$id="font_string";}
+        if (empty($atts["id"])) {
+            $ret="NettOp plugin error: getConfigValue called but no id set!";
+        } else {
+            //$ret=self::$my_settings_page->getOption($atts["id"]);
+            $ret=self::getConfig($atts["id"]);
+            if ($ret==null) {
+                $ret="NettOp plugin error: config value '" . $atts["id"] . "' requested - but nothing by that name exists.";
+            }
         }
         return $ret;
     }
 
     //called internally
+    //nb! empty string is changed to null
     function getConfig($id) {
         switch ($id) {
-            case "googleFont":
-                //return "Limelight";
-                return "";
+            case "dummy":
+                return "dummy";
             default:
-                return "";
+                $ret=self::$my_settings_page->getOption($id);;
+                if (empty($ret)) {$ret=null;}
+                return $ret;
         }
     }
+
     function addGoogleFonts_loader() {
-        wp_enqueue_style( 'UIS-google-fonts', 'http://fonts.googleapis.com/css?family=' . self::getConfig("googleFont"), false );
+        wp_enqueue_style( 'UIS-google-fonts', 'http://fonts.googleapis.com/css?family=' . self::getConfig(NETTOP_DATA_googleFont), false, null );
     }
     
     function addGoogleFonts_css(){
-        $fontToAdd=self::getConfig("googleFont");
+        $fontToAdd=self::getConfig(NETTOP_DATA_googleFont);
       ?>
       <style type="text/css">
-        body {font-family: <?php echo($fontToAdd);?>}
+        body {font-family: <?php echo($fontToAdd . ", " . NETTOP_FALLBACK_FONTS);?>}
       </style>
       <?php
     }
@@ -127,7 +150,7 @@ class nettop {
         }
     }
 
-    function getParentLink( $atts, $content ) {
+    function getPreviousLink( $atts, $content ) {
         $current = array_search(get_the_ID(), self::$pages);
         if ($current==0) {
             return("");

@@ -24,7 +24,7 @@ class MySettingsPage
         }
 
         // Set class property
-        $this->options = get_option( 'my_option_name' );
+        $this->options = get_option( NETTOP_SETTINGS_PAGE );
         //var_dump($this->options);
     }
 
@@ -35,7 +35,6 @@ class MySettingsPage
         } else {
             return null;
         }
-        
     }
 
     /**
@@ -64,7 +63,7 @@ class MySettingsPage
             <form method="post" action="options.php">
             <?php
                 // This prints out all hidden setting fields
-                settings_fields( 'my_option_group' );
+                settings_fields( 'nettop_group' );
                 do_settings_sections(NETTOP_SETTINGS_PAGE);
                 submit_button();
             ?>
@@ -79,8 +78,8 @@ class MySettingsPage
     public function page_init()
     {        
         register_setting(
-            'my_option_group', // Option group
-            'my_option_name', // Option name
+            'nettop_group', // Option group
+            NETTOP_SETTINGS_PAGE, // Option name
             array( $this, 'sanitize' ) // Sanitize
         );
 
@@ -102,9 +101,9 @@ class MySettingsPage
         );      
 
         add_settings_field(
-            'font_string', // ID
-            'Google Fonts (', // Title 
-            function() {echo self::addInputFieldString("font_string", "Leave empty for none.<br>If not empty then adds a 'font-family' css declaration in the header. NB: '" . NETTOP_FALLBACK_FONTS . "' are automatically added as fallbacks.");},
+            NETTOP_DATA_googleFont, // ID
+            'Google Fonts', // Title 
+            function() {echo self::addInputFieldString(NETTOP_DATA_googleFont, "Leave empty to use current theme default.<br>If set adds a 'font-family' css declaration to the header. NB: '" . NETTOP_FALLBACK_FONTS . "' are automatically added as fallbacks.");},
             NETTOP_SETTINGS_PAGE, // Page
             'setting_section_id' // Section           
         );      
@@ -130,8 +129,8 @@ class MySettingsPage
         if( isset( $input['id_number'] ) )
             $new_input['id_number'] = absint( $input['id_number'] );
 
-        if( isset( $input['font_string'] ) )
-            $new_input['font_string'] = sanitize_text_field( $input['font_string'] );
+        if( isset( $input[NETTOP_DATA_googleFont] ) )
+            $new_input[NETTOP_DATA_googleFont] = sanitize_text_field( $input[NETTOP_DATA_googleFont] );
 
         if( isset( $input['title'] ) )
             $new_input['title'] = sanitize_text_field( $input['title'] );
@@ -153,7 +152,7 @@ class MySettingsPage
 
     public function addInputFieldString($id, $txt) {
         printf(
-            '<input type="text" id="' . $id . '" name="my_option_name[' . $id . ']" value="%s" /> ' . $txt,
+            '<input type="text" id="' . $id . '" name="' . NETTOP_SETTINGS_PAGE . '[' . $id . ']" value="%s" /> ' . $txt,
             isset( $this->options[$id] ) ? esc_attr( $this->options[$id]) : ''
         );
     }
@@ -163,7 +162,7 @@ class MySettingsPage
     public function id_number_callback()
     {
         printf(
-            '<input type="text" id="id_number" name="my_option_name[id_number]" value="%s" />',
+            '<input type="text" id="id_number" name="' . NETTOP_SETTINGS_PAGE . '[id_number]" value="%s" />',
             isset( $this->options['id_number'] ) ? esc_attr( $this->options['id_number']) : ''
         );
     }
