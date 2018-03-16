@@ -7,7 +7,7 @@ Shortcodes:<br>
 <br>
 [NETTOP_getConfigValue id="&lt;configSetting>"]<br>
 <br>
-Link output based on page order:<br>
+Will output the link based on page order (e.g. put the link in an href):<br>
 [NETTOP_getPreviousLink]<br>
 [NETTOP_getNextLink]<br>
 
