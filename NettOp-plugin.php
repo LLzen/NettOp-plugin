@@ -246,7 +246,9 @@ class nettop {
                 $link=$icon->atts["link"];
                 $image=$icon->atts["image"];
                 
-                if ($image==="") {$image='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';}
+                //if ($image==="") {$image='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';}
+                if ($image==="") {$image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+H+1HgAFMAJVLPxbpAAAAABJRU5ErkJggg==';}
+                
                 
                 $build=str_replace("[text]",$text,$template);
                 $build=str_replace("[link]",$link,$build);
@@ -256,7 +258,7 @@ class nettop {
                 //var_dump($build);
                 //echo("<br>");
             }
-            $ret=$ret . "</div>";
+            $ret=$ret . "</div></div>";
         }
         return $ret;
     }
