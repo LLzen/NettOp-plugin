@@ -78,9 +78,8 @@ class nettop {
             add_action('wp_head', array( $this, 'addplugincss'));
         }
 
-        if (is_null(self::getConfig("css"))==false) {
-            add_action('wp_head', array( $this, 'addpagecss'));
-        }
+        add_action('wp_head', array( $this, 'addpagecss'));
+
         
 
 
@@ -181,13 +180,16 @@ class nettop {
     }   
 
     function addpagecss(){
+
         global $post;
         $css=get_post_meta($post->ID, NETTOP_SHORTCODE . 'pageCss', true);
-      ?>
-      <style type="text/css">
-        <?php echo($css); ?>
-      </style>
-      <?php
+        if ($css) {
+            ?>
+            <style type="text/css">
+              <?php echo($css); ?>
+            </style>
+            <?php
+        }
     }         
 
     function addJavascript(){ //in header
@@ -246,8 +248,26 @@ class nettop {
                 $link=$icon->atts["link"];
                 $image=$icon->atts["image"];
                 
+                
+                if (substr($image, 0, 6)=="color:") {
+                    $image=substr($image, 6);
+                    
+                    //see: http://png-pixel.com/
+                    switch ($image) {
+                        case "blue":
+                            $image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+H+1HgAFMAJVLPxbpAAAAABJRU5ErkJggg==';
+                            break;
+                        case "black":
+                            $image='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+                            break;
+                        default:
+                            $image="";
+                    }
+                }
+                
+                //var_dump($image);
                 //if ($image==="") {$image='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';}
-                if ($image==="") {$image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+H+1HgAFMAJVLPxbpAAAAABJRU5ErkJggg==';}
+                //if ($image==="") {$image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+H+1HgAFMAJVLPxbpAAAAABJRU5ErkJggg==';}
                 
                 
                 $build=str_replace("[text]",$text,$template);
