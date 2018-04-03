@@ -13,7 +13,7 @@ Shortcodes:
 NETTOP_getLinkIcons - see custom field 'NETTOP_getLinkIconTemplate'
 NETTOP_getPreviousLink 
 NETTOP_getNextLink
-NETTOP_getConfigValue
+NETTOP_getConfigValue - gets the value of a custom field
 
 Via Custom fields:
 NETTOP_getLinkIconTemplate - combine with shortcode 'NETTOP_getLinkIcons'. This provides the template and should contain formatting around [link], [image] and [title]
