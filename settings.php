@@ -4,12 +4,18 @@
 
 define('NETTOP_SETTINGS_PAGE', 'nettop-plugin');
 
+define('NETTOP_SHOW_DOG_MODE', true);
+
+
+
 class NettopSettingsPage
 {
     /**
      * Holds the values to be used in the fields callbacks
      */
     private $options;
+
+    private $loadMessage="";
 
     /**
      * Start up
@@ -118,6 +124,36 @@ class NettopSettingsPage
             array( $this, 'sanitize' ) // Sanitize
         );
 
+        if (!empty($this->options['template_filename_from']) && !empty($this->options['template_filename_to'])) {
+            $sql="UPDATE wp_postmeta SET meta_value = '" . $this->options['template_filename_from'] . "' WHERE meta_value = '" . $this->options['template_filename_to'] . "'";
+            global $wpdb;
+            
+            $wpdb->update( 
+                $wpdb->postmeta, 
+                array( 'meta_value' => "template-parts/" . $this->options['template_filename_to']), 
+                array( 'meta_value'=> "template-parts/" . $this->options['template_filename_from'])
+            );
+
+            $this->loadMessage="WARNING!!! - template name had been changed!!! : (" . $sql . ")";
+            $this->options['template_filename_from']="";
+            $this->options['template_filename_to']="";
+            update_option( NETTOP_SETTINGS_PAGE, $this->options);
+            
+        }
+        
+
+        //////////
+        //SECTIONS
+
+        if ($this->loadMessage!="") {
+            add_settings_section(
+                'message', // ID
+                "<font color='red'>" . $this->loadMessage . "</font>",
+                function() {print "";},
+                NETTOP_SETTINGS_PAGE // Page
+            );  
+        }
+
         add_settings_section(
             'setting_section_id', // ID
             'Settings for NettOp plugin',
@@ -125,6 +161,19 @@ class NettopSettingsPage
             NETTOP_SETTINGS_PAGE // Page
         );  
 
+        if (NETTOP_SHOW_DOG_MODE) {
+
+            add_settings_section(
+                'setting_dog_mode', // ID
+                'Dog Settings - be very Very careful!',
+                function() {print "Only use if you know what you are doing! (These settings should not normally be visible - please contact support!)";},
+                NETTOP_SETTINGS_PAGE // Page
+            );  
+        }
+        //end SECTIONS
+        //////////
+
+        
         //NB td: maybe refactor to fall in line with the docs: add_settings_field can actually have args added in the 6th argument
 
         add_settings_field(
@@ -133,7 +182,7 @@ class NettopSettingsPage
             function() {echo self::addInputFieldString("id_number", "");},
             NETTOP_SETTINGS_PAGE, // Page
             'setting_section_id' // Section           
-        );      
+        );
 
         add_settings_field(
             NETTOP_DATA_googleFont, // ID
@@ -158,6 +207,15 @@ class NettopSettingsPage
             NETTOP_SETTINGS_PAGE, 
             'setting_section_id'
         );      
+
+        add_settings_field(
+            'template_filename_from', // ID
+            'Change global stored template FILEname(s) from:', 
+            function() {echo self::addInputFieldString("template_filename_from", "<b>to:</b>");echo self::addInputFieldString("template_filename_to", "<br>Notes:<br>Include the file extension - usually '.php'.<br>'template-parts/' is automatically added (prefix).<br>WordPress stores a pages template by its filename in the DB - the display name for that template is stored inside that file. This means we can change the display name easily but NOT the filename - these boxes can be used to change the stored template filename (via search and replace). Pages that have an invalid template name will fall back to the 'default' template - but the DB will still contain the original reference.");},
+            NETTOP_SETTINGS_PAGE, // Page
+            'setting_dog_mode' // Section     
+        );
+        
     }
 
     /**
@@ -180,7 +238,12 @@ class NettopSettingsPage
         if( isset( $input['title'] ) )
             $new_input['title'] = sanitize_text_field( $input['title'] );
 
+        if( isset( $input['template_filename_from'] ) )
+            $new_input['template_filename_from'] = sanitize_text_field( $input['template_filename_from'] );
 
+        if( isset( $input['template_filename_to'] ) ) 
+            $new_input['template_filename_to'] = sanitize_text_field( $input['template_filename_to'] );
+        
         return $new_input;
     }
 
