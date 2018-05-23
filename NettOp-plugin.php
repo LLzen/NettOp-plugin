@@ -246,6 +246,8 @@ class nettop {
                 $build=$template;
                 $text=$icon->atts["text"];
                 $link=$icon->atts["link"];
+                if ($link=="") {$link='javascript:void(0)" style="cursor: default;"';}
+
                 $image=$icon->atts["image"];
                 
                 
