@@ -67,6 +67,7 @@ class nettop {
 
         //wordpress attempts to improve texts visually - which breaks the data for certain shortcodes, so we have to add some exemptions
         add_filter( 'no_texturize_shortcodes', array( $this, 'shortcodes_to_exempt_from_wptexturize'));
+        add_filter('tiny_mce_before_init', array( $this, 'ikreativ_tiny_mce_fix'));
         
         //add_action('wp_head', array( $this, 'addJavascript'));
         if (is_null(self::getConfig(NETTOP_DATA_googleFont))==false) {
@@ -225,6 +226,7 @@ class nettop {
         $atts = shortcode_atts( array(
             'iconwidth' => '100%',
             'iconheight' => '100%',
+            'maxiconsperrow' => -1,
         ), $atts );        
 
         $icons=self::get_shortcode_from_content($content, "icon", false);
@@ -242,7 +244,9 @@ class nettop {
             //var_dump($template);
 
             $ret="<div class=\"items_outer\" style=\"display: block;\">";
+            $counter=0;
             foreach ($icons as $icon) {
+                $counter=$counter+1;
                 $build=$template;
                 $text=$icon->atts["text"];
                 $link=$icon->atts["link"];
@@ -277,6 +281,10 @@ class nettop {
                 $build=str_replace("[image]",$image,$build);
                 $build=str_replace("<img ","<img width=\"". $atts["iconwidth"] . "\" height=\"" . $atts["iconheight"] . "\" ",$build);
                 $ret=$ret . $build;
+                if ($atts["maxiconsperrow"]!=-1) {
+                    if ($counter%$atts["maxiconsperrow"]==0) {$ret=$ret . '<br class="d-none d-lg-block">';}
+                }
+                
                 //var_dump($build);
                 //echo("<br>");
             }
@@ -329,6 +337,37 @@ class nettop {
             }
         }
         return $ret;
+    }
+    
+
+
+    // stop wp removing div tags
+    function ikreativ_tiny_mce_fix( $init )
+    {
+        // html elements being stripped
+        
+        $init['valid_elements'] = '*[*]';
+        $init['extended_valid_elements'] = 'div[*], article[*], h1[*], i[*], a href[*]';
+
+        $init['convert_urls'] = false;
+        
+        // don't remove line breaks
+        $init['remove_linebreaks'] = false;
+
+        // convert newline characters to BR
+        $init['convert_newlines_to_brs'] = true;
+
+        // don't remove redundant BR
+        $init['remove_redundant_brs'] = false;
+
+        $init['allow_html_in_named_anchor'] = true;
+
+        $init['cleanup'] = false;
+
+        
+
+        // pass back to wordpress
+        return $init;
     }
     
 }
